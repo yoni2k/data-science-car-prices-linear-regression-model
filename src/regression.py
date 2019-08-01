@@ -220,7 +220,7 @@ class MyLinearRegression:
         # TODO make sure these are printed properly when needed, and used in the correct place
         results['Num records original'] = len(self.initial_data)
         results['Num records regression'] = len(self.current_data)
-        results['Percent dropped'] = round(len(self.current_data) / len(self.initial_data) * 100, 2)
+        results['Percent dropped'] = 100 - round(len(self.current_data) / len(self.initial_data) * 100, 2)
         results['R2'] = round(r2, 3)
         results['Diff mean'] = round(df_pf.describe()['Difference%']['mean'], 2)
         results['Diff STD'] = round(df_pf.describe()['Difference%']['std'], 2)

@@ -45,6 +45,7 @@ def optimize():
 
     for num_features_to_remove in range(1, len(features)-1):
         for features_to_remove in list(itertools.combinations(features, num_features_to_remove)):
+            features_to_remove = tuple(sorted(features_to_remove))
             input_dic['Features to drop'] = list(features_to_remove)
             input_dic['Remove outliers'] = [('Price', 'high', .01),
                                             ('Mileage', 'high', 0.01),
@@ -53,11 +54,11 @@ def optimize():
             reg = MyLinearRegression('../resources/1.04. Real-life example.csv', 'Price')
             results_dic = reg.do_linear_regression(input_dic)
 
-            if results_dic['R2'] < 0.8 and (results_dic['Diff mean'] + results_dic['Diff STD']) > 100:
+            if results_dic['R2'] < 0.8 or (results_dic['Diff mean'] + results_dic['Diff STD']) > 100:
                 continue
 
             regs_dic[(tuple(set(features) - set(features_to_remove)), tuple(input_dic['Remove outliers']))] = results_dic
-            continue
+            # continue
 
             for price_high_outlier in outliers_dic['Price high']:
                 for mileage_high_outlier in outliers_dic['Mileage high']:
@@ -72,6 +73,8 @@ def optimize():
                                                             ('Mileage', 'high', mileage_high_outlier),
                                                             ('Year', 'low', year_low_outlier)]
                         results_dic = reg.do_linear_regression(input_dic)
+                        if results_dic['R2'] < 0.8 or (results_dic['Diff mean'] + results_dic['Diff STD']) > 100:
+                            continue
                         regs_dic[(tuple(set(features)-set(features_to_remove)), tuple(input_dic['Remove outliers']))] = results_dic
 
     max_r2 = 0
@@ -114,6 +117,6 @@ def optimize():
     print(min_mean_plus_std_outliers)
     print(MyLinearRegression.get_main_results(min_mean_plus_std_values))
 
-    print(f"\nmin_product: {min_product}, features: {min_product_features}, outliers:")
+    print(f"\nmin_product: {round(min_product,2)}, features: {min_product_features}, outliers:")
     print(min_product_outliers)
     print(MyLinearRegression.get_main_results(min_product_values))
