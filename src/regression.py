@@ -54,6 +54,9 @@ class MyLinearRegression:
         plt.title(f'Distribution of {feature_name}')
         plt.show()
 
+    def _get_frequency(self, feature_name):
+        return self.current_data[feature_name].value_counts()
+
     def _get_vif(self, features_list):
         variables = self.current_data[features_list]
         vif = pd.DataFrame()
@@ -244,13 +247,14 @@ class MyLinearRegression:
     @staticmethod
     def get_main_results(full_dic):
         return {
-            'Percent dropped': full_dic['Percent dropped'],
-            'R2': full_dic['R2'],
             'R2 Adj': full_dic['R2 Adj'],
-            'n': full_dic['n'],
-            'p': full_dic['p'],
+            'Diff mean + STD': full_dic['Diff mean'] + full_dic['Diff STD'],
+            '% dropped': full_dic['Percent dropped'],
             'Diff mean': full_dic['Diff mean'],
             'Diff STD': full_dic['Diff STD'],
+            'n': full_dic['n'],
+            'p': full_dic['p'],
+            'R2': full_dic['R2'],
             'inf_replaced': full_dic['inf_replaced'],
             'zero_replaced': full_dic['inf_replaced']
             }

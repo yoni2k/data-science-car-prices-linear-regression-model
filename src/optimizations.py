@@ -1,10 +1,9 @@
 """
 TODOS by Priority:
-* Outliners - look into values, see results
+* Model - change to "other" for some cutoff point
 * Make sure reference group is not too small
-* Do outliners for categorical values
-* Outliners - check with different ones
 * Combine Brand and Model
+* Remove one of Year / Mileage or at least see what influence it has
 * Check conclusions on numerous train/test
 * Last: Don't do log on price
 

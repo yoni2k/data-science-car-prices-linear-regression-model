@@ -14,8 +14,19 @@ def simple_initial(debug=True):
               f"{round(reg._get_num_rows_with_null_vals() * 100 / reg._get_size(),2)}\n")
 
     if debug:
-        features_after = reg._get_features()
-        print("Features before dropping (" + str(len(features_after)) + "):\n" + str(features_after) + '\n')
+        features_before = reg._get_features()
+        print("Features before dropping (" + str(len(features_before)) + "):\n" + str(features_before) + '\n')
+        for feature in ['Brand', 'Body', 'Engine Type', 'Registration', 'Model']:
+            print(f"\nFrequency for feature {feature}:\n")
+            print(reg._get_frequency(feature).to_string(max_rows=10000))
+            """ Conclusions:
+                No problem: Brand, Registration, 
+                To be careful with:
+                    Body - not a 'hatch' - 285 values
+                    Engine Type - not 'Other' - 154 values
+                    Model - need cutoff point for "other", put one of the below for reference
+                    
+            """
 
     # reg._drop_features(features[3:5])
 
@@ -71,7 +82,7 @@ def simple_initial(debug=True):
 
     if debug:
         print("\n-------------------------------------------------------\nAFTER Adding regression:")
-        print(f"Coefficients summary:\n{results_dic['Coef summary']}")
+        print(f"Coefficients summary:\n{results_dic['Coef summary'].to_string(max_rows=1000)}")
         print(f"Differences summary: \n{results_dic['Diff summary']}")
         print(f"R2: {results_dic['R2']}, Difference mean: {results_dic['Diff mean']}, "
               f"Difference STD: {results_dic['Diff STD']}")
