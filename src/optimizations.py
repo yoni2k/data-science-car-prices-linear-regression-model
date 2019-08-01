@@ -5,7 +5,6 @@ TODOS by Priority:
 * Do outliners for categorical values
 * Outliners - check with different ones
 * Combine Brand and Model
-* Add adjusted R
 * Check conclusions on numerous train/test
 * Last: Don't do log on price
 

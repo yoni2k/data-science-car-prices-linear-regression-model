@@ -198,6 +198,9 @@ class MyLinearRegression:
 
         # Check results
         r2 = reg.score(x_train, y_train)
+        n = x_train.shape[0]
+        p = x_train.shape[1]
+        r2_adj = 1 - (1 - r2) * (n - 1) / (n - p - 1)
 
         # Prepare summary
         coef_summary = pd.DataFrame(inputs.columns.values, columns=['Features'])
@@ -220,8 +223,11 @@ class MyLinearRegression:
         # TODO make sure these are printed properly when needed, and used in the correct place
         results['Num records original'] = len(self.initial_data)
         results['Num records regression'] = len(self.current_data)
-        results['Percent dropped'] = 100 - round(len(self.current_data) / len(self.initial_data) * 100, 2)
+        results['Percent dropped'] = round((1 - len(self.current_data) / len(self.initial_data)) * 100, 2)
         results['R2'] = round(r2, 3)
+        results['R2 Adj'] = round(r2_adj, 3)
+        results['n'] = n
+        results['p'] = p
         results['Diff mean'] = round(df_pf.describe()['Difference%']['mean'], 2)
         results['Diff STD'] = round(df_pf.describe()['Difference%']['std'], 2)
         results['Coef summary'] = coef_summary
@@ -240,6 +246,9 @@ class MyLinearRegression:
         return {
             'Percent dropped': full_dic['Percent dropped'],
             'R2': full_dic['R2'],
+            'R2 Adj': full_dic['R2 Adj'],
+            'n': full_dic['n'],
+            'p': full_dic['p'],
             'Diff mean': full_dic['Diff mean'],
             'Diff STD': full_dic['Diff STD'],
             'inf_replaced': full_dic['inf_replaced'],

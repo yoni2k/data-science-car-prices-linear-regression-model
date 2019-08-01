@@ -132,7 +132,7 @@ def test_regular_regression_func(debug=False):
                  }
     results_dic = reg.do_linear_regression(input_dic)
 
-    #print(f"{results_dic['R2']} {results_dic['Diff mean']} {results_dic['Diff STD']}")
+    # print(f"R2:{results_dic['R2']}, R2 Adj: {results_dic['R2 Adj']}, Diff mean: {results_dic['Diff mean']}, Diff STD: {results_dic['Diff STD']}")
     assert (results_dic['R2'] == 0.726)
     assert (results_dic['Diff mean'] == 43.04)
     assert (results_dic['Diff STD'] == 111.73)
