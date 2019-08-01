@@ -3,78 +3,71 @@ import contextlib
 from src.regression import MyLinearRegression
 
 
-def get_percent_str(part, total):
-    return str(round(part / total * 100, 2)) + " %"
-
-
 def simple_initial(debug=True):
     reg = MyLinearRegression('../resources/1.04. Real-life example.csv', 'Price', debug)
 
     if debug:
-        print("Number of records: " + str(reg.get_size()) + '\n')
-        print("Head:\n" + reg.head() + '\n')
-        print("Describe:\n" + reg.describe() + '\n')
-        print("Num null values: " + str(reg.get_num_rows_with_null_vals()) + ', ' +
-              get_percent_str(reg.get_num_rows_with_null_vals(), reg.get_size()) + '\n')
+        print("Number of records: " + str(reg._get_size()) + '\n')
+        print("Head:\n" + reg._head() + '\n')
+        print("Describe:\n" + reg._describe() + '\n')
+        print(f"Num null values: {str(reg._get_num_rows_with_null_vals())}, "
+              f"{round(reg._get_num_rows_with_null_vals() * 100 / reg._get_size(),2)}\n")
 
-    features_orig = reg.get_features()
     if debug:
-        print("Features before dropping (" + str(len(features_orig)) + "):\n" + str(features_orig) + '\n')
+        features_after = reg._get_features()
+        print("Features before dropping (" + str(len(features_after)) + "):\n" + str(features_after) + '\n')
 
-    # reg.drop_features(features[3:5])
+    # reg._drop_features(features[3:5])
 
-    features = reg.get_features()
+    features = reg._get_features()
     if debug:
         print("\n-------------------------------------------------------\nAFTER dropping features:")
         print("Features after dropping (" + str(len(features)) + "):\n" + str(features) + '\n')
-        print("Head:\n" + reg.head() + '\n')
-        print("Describe:\n" + reg.describe() + '\n')
+        print("Head:\n" + reg._head() + '\n')
+        print("Describe:\n" + reg._describe() + '\n')
 
     if debug:
-        print("Rows before dropping null values: " + str(reg.get_size()) + ", "
-              + get_percent_str(reg.get_size(), reg.get_initial_size()) + '\n')
-    reg.drop_null_rows()
+        print(f"Rows before dropping null values: {str(reg._get_size())}, {reg._get_left_rows_percent_str()}\n")
+    reg._drop_null_rows()
     if debug:
-        print("Rows after dropping null values: " + str(reg.get_size()) + ", "
-              + get_percent_str(reg.get_size(), reg.get_initial_size()) + '\n')
+        print(f"Rows after dropping null values: {str(reg._get_size())}, {reg._get_left_rows_percent_str()}\n")
 
-    reg.remove_outliers_low_fraction('Price', .01)
+    reg._remove_outliers_low_fraction('Price', .01)
     if debug:
-        print("Rows afer removing outliers low: " + str(reg.get_size()) + ", "
-              + get_percent_str(reg.get_size(), reg.get_initial_size()) + '\n')
-    reg.remove_outliers_high_fraction('Price', .01)
+        print(f"Rows afer removing outliers low: {str(reg._get_size())}, {reg._get_left_rows_percent_str()}\n")
+
+    reg._remove_outliers_high_fraction('Price', .01)
     if debug:
-        print("Rows afer removing outliers high: " + str(reg.get_size()) + ", "
-              + get_percent_str(reg.get_size(), reg.get_initial_size()) + '\n')
+        print(f"Rows afer removing outliers high: {str(reg._get_size())}, {reg._get_left_rows_percent_str()}\n")
 
     if debug:
         print("\n-------------------------------------------------------\nAFTER REMOVING ROWS:")
-        print("Number of records: " + str(reg.get_size()) + '\n')
-        print("Head:\n" + reg.head() + '\n')
-        print("Describe:\n" + reg.describe() + '\n')
+        print("Number of records: " + str(reg._get_size()) + '\n')
+        print("Head:\n" + reg._head() + '\n')
+        print("Describe:\n" + reg._describe() + '\n')
 
-    # reg.display_dist('Price')
+    # reg._display_dist('Price')
 
-    reg.do_log_on_dependent()
+    reg._do_log_on_dependent()
 
     if debug:
         print("\n-------------------------------------------------------\nAFTER LOG on Dependent:")
-        print("Head:\n" + reg.head() + '\n')
-        print("Describe:\n" + reg.describe() + '\n')
+        print("Head:\n" + reg._head() + '\n')
+        print("Describe:\n" + reg._describe() + '\n')
 
-    # reg.display_dist('Price')
+    # reg._display_dist('Price')
 
     if debug:
-        print("VIFs: \n" + reg.get_vif(['Mileage', 'Year', 'EngineV']))
+        print("VIFs: \n" + reg._get_vif(['Mileage', 'Year', 'EngineV']))
 
-    reg.add_dummies()
+    reg._add_dummies()
 
     if debug:
         print("\n-------------------------------------------------------\nAFTER Adding dummies:")
-        print("Head:\n" + reg.head() + '\n')
-        print("Describe:\n" + reg.describe() + '\n')
+        print("Head:\n" + reg._head() + '\n')
+        print("Describe:\n" + reg._describe() + '\n')
 
-    results_dic = reg.do_actual_regression_part()
+    results_dic = reg._do_actual_regression_part({})
 
     if debug:
         print("\n-------------------------------------------------------\nAFTER Adding regression:")
@@ -88,17 +81,17 @@ def simple_initial(debug=True):
 
 def regression_same_as_lecture():
     reg = MyLinearRegression('../resources/1.04. Real-life example.csv', 'Price')
-    reg.drop_features(['Model'])
-    reg.drop_null_rows()
-    reg.remove_outliers_high_fraction('Price', .01)
-    reg.remove_outliers_high_fraction('Mileage', .01)
-    reg.remove_outliers_high_num('EngineV', 6.5)
-    reg.remove_outliers_low_fraction('Year', 0.01)
-    reg.do_log_on_dependent()
-    reg.drop_features(['Year'])
-    reg.add_dummies()
+    reg._drop_features(['Model'])
+    reg._drop_null_rows()
+    reg._remove_outliers_high_fraction('Price', .01)
+    reg._remove_outliers_high_fraction('Mileage', .01)
+    reg._remove_outliers_high_num('EngineV', 6.5)
+    reg._remove_outliers_low_fraction('Year', 0.01)
+    reg._do_log_on_dependent()
+    reg._drop_features(['Year'])
+    reg._add_dummies()
 
-    return reg.do_actual_regression_part()
+    return reg._do_actual_regression_part({})
 
 
 def test_basics():
@@ -122,13 +115,24 @@ def test_basics():
     assert (results_dic['Diff STD'] == 55.07)
 
 
-def test_regular_regression_func():
+def test_regular_regression_func(debug=False):
     # same as lecture, but order is different, so results slightly different:
     # R2: 0.726, pred_diff_percent_mean: 43.04, pred_diff_percent_std: 111.73
-    reg = MyLinearRegression('../resources/1.04. Real-life example.csv', 'Price')
-    input_dic = {'Features to drop': ['Model', 'Year']}
+    reg = MyLinearRegression('../resources/1.04. Real-life example.csv', 'Price', debug)
+    input_dic = {'Features to drop': ['Model', 'Year'],
+                 'Remove outliers': [('Price', 'high', .001),
+                                     ('Price', 'low', 0),
+                                     ('EngineV', 'high', 0),
+                                     ('EngineV', 'low', 0),
+                                     ('Mileage', 'high', 0.01),
+                                     ('Mileage', 'low', 0),
+                                     ('Year', 'high', 0),
+                                     ('Year', 'low', 0.01)
+                                     ]
+                 }
     results_dic = reg.do_linear_regression(input_dic)
 
-    assert (results_dic['R2'] == 0.726)
-    assert (results_dic['Diff mean'] == 43.04)
-    assert (results_dic['Diff STD'] == 111.73)
+    #print(f"{results_dic['R2']} {results_dic['Diff mean']} {results_dic['Diff STD']}")
+    assert (results_dic['R2'] == 0.742)
+    assert (results_dic['Diff mean'] == 47.58)
+    assert (results_dic['Diff STD'] == 119.2)

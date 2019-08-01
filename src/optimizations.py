@@ -31,7 +31,18 @@ def optimize():
     for num_features_to_remove in range(1, len(features)-1):
         for features_to_remove in list(itertools.combinations(features, num_features_to_remove)):
             reg = MyLinearRegression('../resources/1.04. Real-life example.csv', 'Price')
-            input_dic = {'Features to drop': list(features_to_remove)}
+
+            input_dic = {'Features to drop': list(features_to_remove),
+                         'Remove outliers': [('Price', 'high', .001),
+                                                ('Price', 'low', 0),
+                                                ('EngineV', 'high', 0),
+                                                ('EngineV', 'low', 0),
+                                                ('Mileage', 'high', 0.01),
+                                                ('Mileage', 'low', 0),
+                                                ('Year', 'high', 0),
+                                                ('Year', 'low', 0.01)
+                                            ]
+                         }
             results_dic = reg.do_linear_regression(input_dic)
             regs_dic[tuple(set(features)-set(features_to_remove))] = results_dic
 

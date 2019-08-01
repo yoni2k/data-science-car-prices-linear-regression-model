@@ -28,30 +28,33 @@ class MyLinearRegression:
 
     """ Methods that don't affect the data """
 
-    def get_size(self):
+    def _get_size(self):
         return len(self.current_data)
 
-    def get_initial_size(self):
+    def _get_initial_size(self):
         return len(self.initial_data)
 
-    def get_features(self):
+    def _get_left_rows_percent_str(self):
+        return str(round(len(self.current_data) * 100 / len(self.initial_data), 2)) + " %"
+
+    def _get_features(self):
         return self.current_data.columns.values
 
-    def describe(self):
+    def _describe(self):
         return self.current_data.describe(include='all').to_string()
 
-    def head(self, num_rows=5):
+    def _head(self, num_rows=5):
         return self.current_data.head(num_rows).to_string()
 
-    def get_num_rows_with_null_vals(self):
+    def _get_num_rows_with_null_vals(self):
         return self.current_data.isnull().sum().sum()
 
-    def display_dist(self, feature_name):
+    def _display_dist(self, feature_name):
         sns.distplot(self.current_data[feature_name])
         plt.title(f'Distribution of {feature_name}')
         plt.show()
 
-    def get_vif(self, features_list):
+    def _get_vif(self, features_list):
         variables = self.current_data[features_list]
         vif = pd.DataFrame()
         vif["VIF"] = [variance_inflation_factor(variables.values, i) for i in range(variables.shape[1])]
@@ -60,35 +63,35 @@ class MyLinearRegression:
 
     """ Methods that affect the data """
 
-    def drop_features(self, feature_list):
+    def _drop_features(self, feature_list):
         self.current_data.drop(feature_list, axis=1, inplace=True)
 
-    def drop_null_rows(self):
+    def _drop_null_rows(self):
         self.current_data.dropna(axis=0, inplace=True)
         self.current_data.reset_index(drop=True, inplace=True)
 
-    def remove_outliers_low_fraction(self, feature_name, fraction_to_remove):
+    def _remove_outliers_low_fraction(self, feature_name, fraction_to_remove):
         percentile_value = self.current_data[feature_name].quantile(fraction_to_remove)
         self.current_data = self.current_data[self.current_data[feature_name] > percentile_value]
         self.current_data.reset_index(drop=True, inplace=True)
 
-    def remove_outliers_high_fraction(self, feature_name, fraction_to_remove):
+    def _remove_outliers_high_fraction(self, feature_name, fraction_to_remove):
         percentile_value = self.current_data[feature_name].quantile(1 - fraction_to_remove)
         self.current_data = self.current_data[self.current_data[feature_name] < percentile_value]
         self.current_data.reset_index(drop=True, inplace=True)
 
-    def remove_outliers_low_num(self, feature_name, num_to_remove_up_to):
+    def _remove_outliers_low_num(self, feature_name, num_to_remove_up_to):
         self.current_data = self.current_data[self.current_data[feature_name] > num_to_remove_up_to]
         self.current_data.reset_index(drop=True, inplace=True)
 
-    def remove_outliers_high_num(self, feature_name, num_to_remove_from):
+    def _remove_outliers_high_num(self, feature_name, num_to_remove_from):
         self.current_data = self.current_data[self.current_data[feature_name] < num_to_remove_from]
         self.current_data.reset_index(drop=True, inplace=True)
 
-    def do_log_on_dependent(self):
+    def _do_log_on_dependent(self):
         self.current_data[self.name_dependent] = np.log(self.current_data[self.name_dependent])
 
-    def add_dummies(self):
+    def _add_dummies(self):
         self.current_data = pd.get_dummies(self.current_data, drop_first=True)
 
     """ Main methods """
@@ -123,40 +126,56 @@ class MyLinearRegression:
     def do_linear_regression(self, input_dic):
 
         # TODO copy here different debug features from test functions
+        output_dic = {}
 
-        self.drop_features(input_dic['Features to drop'])
-
-        features = self.get_features()
         if self.debug:
-            print("Features after dropping (" + str(len(features)) + "):\n" + str(features) + '\n')
+            features_orig = self._get_features()
+            print(f"Features before dropping ({str(len(features_orig))}): {str(features_orig)}\n")
+        self._drop_features(input_dic['Features to drop'])
+        if self.debug:
+            features_after = self._get_features()
+            print("\n-------------------------------------------------------\nAFTER dropping features:")
+            print(f"Features after dropping ({str(len(features_after))}): {str(features_after)}\n")
 
-        self.drop_null_rows()
+        if self.debug:
+            print(f"Rows before dropping null values: {str(self._get_size())} {self._get_left_rows_percent_str()}")
+        self._drop_null_rows()
+        if self.debug:
+            print(f"Rows after dropping null values: {str(self._get_size())} {self._get_left_rows_percent_str()}")
 
-        self.remove_outliers_high_fraction('Price', .01)
-
-        if 'Mileage' not in input_dic['Features to drop']:
-            self.remove_outliers_high_fraction('Mileage', .01)
-
+        # Always remove EngineV's top
         if 'EngineV' not in input_dic['Features to drop']:
-            self.remove_outliers_high_num('EngineV', 6.5)
+            self._remove_outliers_high_num('EngineV', 6.5)
 
-        if 'Year' not in input_dic['Features to drop']:
-            self.remove_outliers_low_fraction('Year', 0.01)
+        for outlier in input_dic['Remove outliers']:
+            if outlier[0] not in input_dic['Features to drop']:
+                if outlier[2] != 0:
+                    if outlier[1] == 'high':
+                        if self.debug:
+                            print(f"Rows after removing outliers - high: {outlier[0]} {outlier[2]}: {str(self._get_size())} {self._get_left_rows_percent_str()}")
+                        self._remove_outliers_high_fraction(outlier[0], outlier[2])
+                    elif outlier[1] == 'low':
+                        self._remove_outliers_low_fraction(outlier[0], outlier[2])
+                        if self.debug:
+                            print(f"Rows after removing outliers - low: {outlier[0]} {outlier[2]}: {str(self._get_size())} {self._get_left_rows_percent_str()}")
+                    else:
+                        assert False, "invalid parameter"
 
-        self.do_log_on_dependent()
+        self._do_log_on_dependent()
 
-        self.add_dummies()
+        self._add_dummies()
 
-        results_dic = self.do_actual_regression_part()
+        results_dic = self._do_actual_regression_part(input_dic)
+        output_dic.update(results_dic)
         # TODO print better - copy from other places
         if self.debug:
-            print(f"Coefficients summary:\n{results_dic['Coef summary']}")
-            print(f"Differences summary: \n{results_dic['Diff summary']}")
-            print(f"R2: {results_dic['R2']}, pred_diff_percent_mean: {results_dic['Diff mean']}, "
-                  f"pred_diff_percent_std: {results_dic['Diff STD']}")
-        return results_dic
+            print(f"Coefficients summary:\n{output_dic['Coef summary']}")
+            print(f"Differences summary: \n{output_dic['Diff summary']}")
+            print(f"R2: {output_dic['R2']}, pred_diff_percent_mean: {output_dic['Diff mean']}, "
+                  f"pred_diff_percent_std: {output_dic['Diff STD']}")
+        return output_dic
 
-    def do_actual_regression_part(self):
+    def _do_actual_regression_part(self, input_dic):
         results = {}
 
         targets = self.current_data[self.name_dependent]
