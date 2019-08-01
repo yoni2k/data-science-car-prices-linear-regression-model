@@ -1,6 +1,5 @@
 import contextlib
 
-# TODO go over imports
 from src.regression import MyLinearRegression
 
 
@@ -9,7 +8,7 @@ def get_percent_str(part, total):
 
 
 def simple_initial(debug=True):
-    reg = MyLinearRegression('../resources/1.04. Real-life example.csv', 'Price')
+    reg = MyLinearRegression('../resources/1.04. Real-life example.csv', 'Price', debug)
 
     if debug:
         print("Number of records: " + str(reg.get_size()) + '\n')
@@ -75,7 +74,7 @@ def simple_initial(debug=True):
         print("Head:\n" + reg.head() + '\n')
         print("Describe:\n" + reg.describe() + '\n')
 
-    results_dic = reg.do_actual_regression_part(debug=debug)
+    results_dic = reg.do_actual_regression_part()
 
     if debug:
         print("\n-------------------------------------------------------\nAFTER Adding regression:")
@@ -126,7 +125,6 @@ def test_regular_regression_func():
     # same as lecture, but order is different, so results slightly different:
     # R2: 0.726, pred_diff_percent_mean: 43.04, pred_diff_percent_std: 111.73
     reg = MyLinearRegression('../resources/1.04. Real-life example.csv', 'Price')
-    # TODO rename method
     results_dic = reg.do_linear_regression(['Model', 'Year'])
 
     assert (results_dic['R2'] == 0.726)

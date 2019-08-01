@@ -17,13 +17,15 @@ class MyLinearRegression:
     initial_data = pd.DataFrame()
     current_data = pd.DataFrame()
     name_dependent = ""
+    debug = False
 
     """ Methods that affect the data """
 
-    def __init__(self, file_path, name_dependent):
+    def __init__(self, file_path, name_dependent, debug=False):
         self.initial_data = pd.read_csv(file_path)
         self.current_data = self.initial_data.copy()
         self.name_dependent = name_dependent
+        self.debug = debug
 
     """ Methods that don't affect the data """
 
@@ -64,7 +66,6 @@ class MyLinearRegression:
 
     def drop_null_rows(self):
         self.current_data.dropna(axis=0, inplace=True)
-        # TODO remove if previous line works
         self.current_data.reset_index(drop=True, inplace=True)
 
     def remove_outliers_low_fraction(self, feature_name, fraction_to_remove):
@@ -93,14 +94,38 @@ class MyLinearRegression:
 
     """ Main methods """
 
-    def do_linear_regression(self, features_to_drop, debug=False):
+    def _fix_prediction(self, predicted_y, y_train_max, y_train_min):
+        inf_replaced = False
+        zero_replaced = False
+        inf_replaced_with = None
+        zero_replaced_with = None
+
+        #  print("20 largest before:\n" + str(predicted_y['Prediction'].nlargest(20)) + "\n")
+        if predicted_y['Prediction'].max() == np.inf:
+            if self.debug:
+                print(f"Replacing inf with {y_train_max}")
+            inf_replaced = True
+            inf_replaced_with = y_train_max
+            predicted_y['Prediction'].replace(np.inf, y_train_max, inplace=True)
+
+        # TODO - decide if leaving also the smallest side
+        if predicted_y['Prediction'].min() == 0:
+            if self.debug:
+                print(f"Replacing 0 with {y_train_min}")
+            zero_replaced = True
+            zero_replaced_with = y_train_min
+            predicted_y['Prediction'].replace(0, y_train_min, inplace=True)
+
+        return predicted_y, inf_replaced, zero_replaced, inf_replaced_with, zero_replaced_with
+
+    def do_linear_regression(self, features_to_drop):
 
         # TODO copy here different debug features from test functions
 
         self.drop_features(features_to_drop)
 
         features = self.get_features()
-        if debug:
+        if self.debug:
             print("Features after dropping (" + str(len(features)) + "):\n" + str(features) + '\n')
 
         self.drop_null_rows()
@@ -122,14 +147,14 @@ class MyLinearRegression:
 
         results_dic = self.do_actual_regression_part()
         # TODO print better - copy from other places
-        if debug:
+        if self.debug:
             print(f"Coefficients summary:\n{results_dic['Coef summary']}")
             print(f"Differences summary: \n{results_dic['Diff summary']}")
             print(f"R2: {results_dic['R2']}, pred_diff_percent_mean: {results_dic['Diff mean']}, "
                   f"pred_diff_percent_std: {results_dic['Diff STD']}")
         return results_dic
 
-    def do_actual_regression_part(self, debug=False):
+    def do_actual_regression_part(self):
         results = {}
 
         targets = self.current_data[self.name_dependent]
@@ -165,8 +190,8 @@ class MyLinearRegression:
         df_pf = pd.DataFrame(y_hat_test_exp, columns=['Prediction'])
         y_test = y_test.reset_index(drop=True)
         df_pf['Target'] = np.exp(y_test)
-        df_pf, inf_replaced, zero_replaced = self._fix_prediction(df_pf, np.exp(y_train.max()), np.exp(y_train.min()),
-                                                                  debug=debug)
+        df_pf, inf_replaced, zero_replaced, inf_replaced_with, zero_replaced_with = \
+            self._fix_prediction(df_pf, np.exp(y_train.max()), np.exp(y_train.min()))
 
         df_pf['Residual'] = df_pf['Target'] - df_pf['Prediction']
         df_pf['Difference%'] = np.absolute(df_pf['Residual'] / df_pf['Target'] * 100)
@@ -182,6 +207,8 @@ class MyLinearRegression:
         results['Diff summary'] = df_pf.describe().to_string()
         results['inf_replaced'] = inf_replaced
         results['zero_replaced'] = zero_replaced
+        results['inf_replaced_with'] = inf_replaced_with
+        results['zero_replaced_with'] = zero_replaced_with
 
         return results
 
@@ -198,25 +225,3 @@ class MyLinearRegression:
             'zero_replaced': full_dic['inf_replaced']
             }
 
-    @staticmethod
-    def _fix_prediction(predicted_y, y_train_max, y_train_min, debug=False):
-        inf_replaced = False
-        zero_replaced = False
-
-        #  print("20 largest before:\n" + str(predicted_y['Prediction'].nlargest(20)) + "\n")
-        if predicted_y['Prediction'].max() == np.inf:
-            # TODO consider removing this debug line.  TODO consider removing all debug lines and flags from this module
-            if debug:
-                print(f"Replacing inf with {y_train_max}")
-            inf_replaced = True
-            predicted_y['Prediction'].replace(np.inf, y_train_max, inplace=True)
-
-        # TODO - decide if leaving also the smallest side
-        if predicted_y['Prediction'].min() == 0:
-            # TODO consider removing this debug line.  TODO consider removing all debug lines and flags from this module
-            if debug:
-                print(f"Replacing 0 with {y_train_min}")
-            zero_replaced = True
-            predicted_y['Prediction'].replace(0, y_train_min, inplace=True)
-
-        return predicted_y, inf_replaced, zero_replaced
