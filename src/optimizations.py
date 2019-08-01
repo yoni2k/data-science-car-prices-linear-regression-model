@@ -30,7 +30,7 @@ def optimize():
         'Price high': [.005, .01, .02],
         'Price low': [],
         'Mileage high': [0.005, .01, .02],
-        'Mileage low': [],
+        'Mileage low': [0, 0.005],
         'Year high': [],
         'Year low': [0.005, 0.01, 0.02]
     }
@@ -48,6 +48,7 @@ def optimize():
             input_dic['Features to drop'] = list(features_to_remove)
             input_dic['Remove outliers'] = [('Price', 'high', .01),
                                             ('Mileage', 'high', 0.01),
+                                            ('Mileage', 'low', 0),
                                             ('Year', 'low', 0.01)
                                             ]
             reg = MyLinearRegression('../resources/1.04. Real-life example.csv', 'Price')
@@ -63,18 +64,21 @@ def optimize():
                 for mileage_high_outlier in outliers_dic['Mileage high']:
                     if 'Mileage' in features_to_remove:
                         continue
-                    for year_low_outlier in outliers_dic['Year low']:
-                        if 'Year' in features_to_remove:
-                            continue
-                        reg = MyLinearRegression('../resources/1.04. Real-life example.csv', 'Price')
+                    for mileage_low_outlier in outliers_dic['Mileage low']:
+                        for year_low_outlier in outliers_dic['Year low']:
+                            if 'Year' in features_to_remove:
+                                continue
 
-                        input_dic['Remove outliers'] = [('Price', 'high', price_high_outlier),
+                            reg = MyLinearRegression('../resources/1.04. Real-life example.csv', 'Price')
+
+                            input_dic['Remove outliers'] = [('Price', 'high', price_high_outlier),
                                                             ('Mileage', 'high', mileage_high_outlier),
+                                                            ('Mileage', 'low', mileage_low_outlier),
                                                             ('Year', 'low', year_low_outlier)]
-                        results_dic = reg.do_linear_regression(input_dic)
-                        if results_dic['R2'] < 0.8 or (results_dic['Diff mean'] + results_dic['Diff STD']) > 100:
-                            continue
-                        regs_dic[(tuple(set(features)-set(features_to_remove)), tuple(input_dic['Remove outliers']))] = results_dic
+                            results_dic = reg.do_linear_regression(input_dic)
+                            if results_dic['R2'] < 0.8 or (results_dic['Diff mean'] + results_dic['Diff STD']) > 100:
+                                continue
+                            regs_dic[(tuple(set(features)-set(features_to_remove)), tuple(input_dic['Remove outliers']))] = results_dic
 
     max_r2 = 0
     max_r2_features = None
