@@ -1,4 +1,3 @@
-# TODO remove not used
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -13,7 +12,7 @@ sns.set()
 
 
 class MyLinearRegression:
-    """ TODO Fill in """
+    """ TODO Fill in - also in other places"""
     initial_data = pd.DataFrame()
     current_data = pd.DataFrame()
     name_dependent = ""
@@ -94,11 +93,9 @@ class MyLinearRegression:
 
     """ Main methods """
 
-    def _fix_prediction(self, predicted_y, y_train_max, y_train_min):
+    def _fix_prediction_inf(self, predicted_y, y_train_max):
         inf_replaced = False
-        zero_replaced = False
         inf_replaced_with = None
-        zero_replaced_with = None
 
         #  print("20 largest before:\n" + str(predicted_y['Prediction'].nlargest(20)) + "\n")
         if predicted_y['Prediction'].max() == np.inf:
@@ -108,7 +105,12 @@ class MyLinearRegression:
             inf_replaced_with = y_train_max
             predicted_y['Prediction'].replace(np.inf, y_train_max, inplace=True)
 
-        # TODO - decide if leaving also the smallest side
+        return predicted_y, inf_replaced, inf_replaced_with
+
+    def _fix_prediction_zero(self, predicted_y, y_train_min):
+        zero_replaced = False
+        zero_replaced_with = None
+
         if predicted_y['Prediction'].min() == 0:
             if self.debug:
                 print(f"Replacing 0 with {y_train_min}")
@@ -116,13 +118,13 @@ class MyLinearRegression:
             zero_replaced_with = y_train_min
             predicted_y['Prediction'].replace(0, y_train_min, inplace=True)
 
-        return predicted_y, inf_replaced, zero_replaced, inf_replaced_with, zero_replaced_with
+        return predicted_y, zero_replaced, zero_replaced_with
 
-    def do_linear_regression(self, features_to_drop):
+    def do_linear_regression(self, input_dic):
 
         # TODO copy here different debug features from test functions
 
-        self.drop_features(features_to_drop)
+        self.drop_features(input_dic['Features to drop'])
 
         features = self.get_features()
         if self.debug:
@@ -132,13 +134,13 @@ class MyLinearRegression:
 
         self.remove_outliers_high_fraction('Price', .01)
 
-        if 'Mileage' not in features_to_drop:
+        if 'Mileage' not in input_dic['Features to drop']:
             self.remove_outliers_high_fraction('Mileage', .01)
 
-        if 'EngineV' not in features_to_drop:
+        if 'EngineV' not in input_dic['Features to drop']:
             self.remove_outliers_high_num('EngineV', 6.5)
 
-        if 'Year' not in features_to_drop:
+        if 'Year' not in input_dic['Features to drop']:
             self.remove_outliers_low_fraction('Year', 0.01)
 
         self.do_log_on_dependent()
@@ -190,8 +192,8 @@ class MyLinearRegression:
         df_pf = pd.DataFrame(y_hat_test_exp, columns=['Prediction'])
         y_test = y_test.reset_index(drop=True)
         df_pf['Target'] = np.exp(y_test)
-        df_pf, inf_replaced, zero_replaced, inf_replaced_with, zero_replaced_with = \
-            self._fix_prediction(df_pf, np.exp(y_train.max()), np.exp(y_train.min()))
+        df_pf, inf_replaced, inf_replaced_with = self._fix_prediction_inf(df_pf, np.exp(y_train.max()))
+        df_pf, zero_replaced, zero_replaced_with = self._fix_prediction_zero(df_pf, np.exp(y_train.min()))
 
         df_pf['Residual'] = df_pf['Target'] - df_pf['Prediction']
         df_pf['Difference%'] = np.absolute(df_pf['Residual'] / df_pf['Target'] * 100)

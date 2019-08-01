@@ -121,11 +121,13 @@ def test_basics():
     assert (results_dic['Diff mean'] == 36.26)
     assert (results_dic['Diff STD'] == 55.07)
 
+
 def test_regular_regression_func():
     # same as lecture, but order is different, so results slightly different:
     # R2: 0.726, pred_diff_percent_mean: 43.04, pred_diff_percent_std: 111.73
     reg = MyLinearRegression('../resources/1.04. Real-life example.csv', 'Price')
-    results_dic = reg.do_linear_regression(['Model', 'Year'])
+    input_dic = {'Features to drop': ['Model', 'Year']}
+    results_dic = reg.do_linear_regression(input_dic)
 
     assert (results_dic['R2'] == 0.726)
     assert (results_dic['Diff mean'] == 43.04)
