@@ -1,6 +1,7 @@
 """
 TODOS by Priority:
 * Model - change to "other" for some cutoff point
+* Check what other things can be tweaked / not done
 * Make sure reference group is not too small
 * Combine Brand and Model
 * Remove one of Year / Mileage or at least see what influence it has

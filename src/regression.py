@@ -66,6 +66,23 @@ class MyLinearRegression:
 
     """ Methods that affect the data """
 
+    def _replace_categorical_fraction_from_max(self, feature_name, frac_from_max, name_to_replace):
+        counts = self.current_data[feature_name].value_counts()
+        print(type(counts))
+        print(counts.shape)
+        print(f"counts, len:{len(counts)}:\n{counts}")
+        max_count = counts.max()
+        index = -1
+        axes = counts.axes
+        print(f"axes, len[0]:{len(axes[0])}, type: {type(axes[0])}:\n")
+        print(axes)
+        for count in counts:
+            index += 1
+            print(f"count: {count}, frac {frac_from_max}, max_count: {max_count}, frac_from_max * max_count: {frac_from_max * max_count}")
+            if count < (frac_from_max * max_count):
+                print(f"Replacing {axes[0][index]}")
+                self.current_data[feature_name].replace(axes[0][index], name_to_replace, inplace=True)
+
     def _drop_features(self, feature_list):
         self.current_data.drop(feature_list, axis=1, inplace=True)
 

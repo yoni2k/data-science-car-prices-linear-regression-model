@@ -52,10 +52,21 @@ def simple_initial(debug=True):
         print(f"Rows afer removing outliers high: {str(reg._get_size())}, {reg._get_left_rows_percent_str()}\n")
 
     if debug:
-        print("\n-------------------------------------------------------\nAFTER REMOVING ROWS:")
+        print("\n-------------------------------------------------------\nAFTER removing rows:")
         print("Number of records: " + str(reg._get_size()) + '\n')
         print("Head:\n" + reg._head() + '\n')
         print("Describe:\n" + reg._describe() + '\n')
+
+    # reg._replace_categorical_fraction_from_max('Model', 0.15, "Other")
+
+    if debug:
+        print("\n-------------------------------------------------------\nAFTER removing rare models:")
+        print("Number of records: " + str(reg._get_size()) + '\n')
+        print("Head:\n" + reg._head() + '\n')
+        print("Describe:\n" + reg._describe() + '\n')
+        print(f"\nFrequency for Model:\n")
+        print(reg._get_frequency('Model').to_string(max_rows=10000))
+
 
     # reg._display_dist('Price')
 
@@ -110,6 +121,7 @@ def test_basics():
     with contextlib.redirect_stdout(None):
         results_dic = simple_initial(debug=True)
     # R2: 0.936, pred_diff_percent_mean: 27.77, pred_diff_percent_std: 130.03
+    # print(f"R2:{results_dic['R2']}, R2 Adj: {results_dic['R2 Adj']}, Diff mean: {results_dic['Diff mean']}, Diff STD: {results_dic['Diff STD']}")
     assert (results_dic['R2'] == 0.936)
     assert (results_dic['Diff mean'] == 27.77)
     assert (results_dic['Diff STD'] == 130.03)
