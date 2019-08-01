@@ -28,25 +28,22 @@ def optimize():
 
     outliers_dic = {
         'Price high': [.005, .01, .02],
-        'Price low': [],
+        'Price low': [0, 0.005],
         'Mileage high': [0.005, .01, .02],
-        'Mileage low': [],
-        'Year high': [],
+        'Mileage low': [],  # was tried and didn't help
+        'Year high': [],  # decided not to try, need to give prices for newest cars, on the graph there are a lot of samples for 2015
         'Year low': [0.005, 0.01, 0.02]
     }
 
     regs_dic = {}
     input_dic = {}
-    input_dic['Remove outliers'] = [('Price', 'high', .01),
-                                    ('Mileage', 'high', 0.01),
-                                    ('Year', 'low', 0.01)
-                                    ]
 
     for num_features_to_remove in range(1, len(features)-1):
         for features_to_remove in list(itertools.combinations(features, num_features_to_remove)):
             features_to_remove = tuple(sorted(features_to_remove))
             input_dic['Features to drop'] = list(features_to_remove)
             input_dic['Remove outliers'] = [('Price', 'high', .01),
+                                            ('Price', 'low', 0),
                                             ('Mileage', 'high', 0.01),
                                             ('Year', 'low', 0.01)
                                             ]
@@ -60,22 +57,24 @@ def optimize():
             # continue
 
             for price_high_outlier in outliers_dic['Price high']:
-                for mileage_high_outlier in outliers_dic['Mileage high']:
-                    if 'Mileage' in features_to_remove:
-                        continue
-                    for year_low_outlier in outliers_dic['Year low']:
-                        if 'Year' in features_to_remove:
+                for price_low_outlier in outliers_dic['Price low']:
+                    for mileage_high_outlier in outliers_dic['Mileage high']:
+                        if 'Mileage' in features_to_remove:
                             continue
+                        for year_low_outlier in outliers_dic['Year low']:
+                            if 'Year' in features_to_remove:
+                                continue
 
-                        reg = MyLinearRegression('../resources/1.04. Real-life example.csv', 'Price')
+                            reg = MyLinearRegression('../resources/1.04. Real-life example.csv', 'Price')
 
-                        input_dic['Remove outliers'] = [('Price', 'high', price_high_outlier),
-                                                        ('Mileage', 'high', mileage_high_outlier),
-                                                        ('Year', 'low', year_low_outlier)]
-                        results_dic = reg.do_linear_regression(input_dic)
-                        if results_dic['R2'] < 0.8 or (results_dic['Diff mean'] + results_dic['Diff STD']) > 100:
-                            continue
-                        regs_dic[(tuple(set(features)-set(features_to_remove)), tuple(input_dic['Remove outliers']))] = results_dic
+                            input_dic['Remove outliers'] = [('Price', 'high', price_high_outlier),
+                                                            ('Price', 'low', price_low_outlier),
+                                                            ('Mileage', 'high', mileage_high_outlier),
+                                                            ('Year', 'low', year_low_outlier)]
+                            results_dic = reg.do_linear_regression(input_dic)
+                            if results_dic['R2'] < 0.8 or (results_dic['Diff mean'] + results_dic['Diff STD']) > 100:
+                                continue
+                            regs_dic[(tuple(set(features)-set(features_to_remove)), tuple(input_dic['Remove outliers']))] = results_dic
 
     max_r2 = 0
     max_r2_features = None
@@ -113,7 +112,7 @@ def optimize():
     print(max_r2_outliers)
     print(MyLinearRegression.get_main_results(max_r2_values))
 
-    print(f"\nmin_mean_plus_std: {min_mean_plus_std}, features: {min_mean_plus_std_features}, outliers: ")
+    print(f"\nmin_mean_plus_std: {round(min_mean_plus_std, 2)}, features: {min_mean_plus_std_features}, outliers: ")
     print(min_mean_plus_std_outliers)
     print(MyLinearRegression.get_main_results(min_mean_plus_std_values))
 
