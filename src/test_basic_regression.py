@@ -120,7 +120,7 @@ def test_regular_regression_func(debug=False):
     # R2: 0.726, pred_diff_percent_mean: 43.04, pred_diff_percent_std: 111.73
     reg = MyLinearRegression('../resources/1.04. Real-life example.csv', 'Price', debug)
     input_dic = {'Features to drop': ['Model', 'Year'],
-                 'Remove outliers': [('Price', 'high', .001),
+                 'Remove outliers': [('Price', 'high', .01),
                                      ('Price', 'low', 0),
                                      ('EngineV', 'high', 0),
                                      ('EngineV', 'low', 0),
@@ -133,6 +133,6 @@ def test_regular_regression_func(debug=False):
     results_dic = reg.do_linear_regression(input_dic)
 
     #print(f"{results_dic['R2']} {results_dic['Diff mean']} {results_dic['Diff STD']}")
-    assert (results_dic['R2'] == 0.742)
-    assert (results_dic['Diff mean'] == 47.58)
-    assert (results_dic['Diff STD'] == 119.2)
+    assert (results_dic['R2'] == 0.726)
+    assert (results_dic['Diff mean'] == 43.04)
+    assert (results_dic['Diff STD'] == 111.73)
