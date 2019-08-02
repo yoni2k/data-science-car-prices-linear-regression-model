@@ -67,20 +67,17 @@ class MyLinearRegression:
     """ Methods that affect the data """
 
     def _replace_categorical_fraction_from_max(self, feature_name, frac_from_max, name_to_replace):
+        if frac_from_max == 0:
+            return
         counts = self.current_data[feature_name].value_counts()
-        print(type(counts))
-        print(counts.shape)
-        print(f"counts, len:{len(counts)}:\n{counts}")
         max_count = counts.max()
         index = -1
         axes = counts.axes
-        print(f"axes, len[0]:{len(axes[0])}, type: {type(axes[0])}:\n")
-        print(axes)
         for count in counts:
             index += 1
-            print(f"count: {count}, frac {frac_from_max}, max_count: {max_count}, frac_from_max * max_count: {frac_from_max * max_count}")
             if count < (frac_from_max * max_count):
-                print(f"Replacing {axes[0][index]}")
+                if self.debug:
+                    print(f"Replacing {axes[0][index]}, count: {count}, frac {frac_from_max}, max_count: {max_count}, frac_from_max * max_count: {frac_from_max * max_count}")
                 self.current_data[feature_name].replace(axes[0][index], name_to_replace, inplace=True)
 
     def _drop_features(self, feature_list):
@@ -181,6 +178,11 @@ class MyLinearRegression:
                     else:
                         assert False, "invalid parameter"
 
+        if input_dic['Remove rare categorical']:
+            for remove_rare in input_dic['Remove rare categorical']:
+                if remove_rare[0] not in input_dic['Features to drop']:
+                    self._replace_categorical_fraction_from_max(remove_rare[0], remove_rare[1], "Other")
+
         self._do_log_on_dependent()
 
         self._add_dummies()
@@ -244,6 +246,7 @@ class MyLinearRegression:
         results['Num records original'] = len(self.initial_data)
         results['Num records regression'] = len(self.current_data)
         results['Percent dropped'] = round((1 - len(self.current_data) / len(self.initial_data)) * 100, 2)
+        results['Model cutoff'] = input_dic['Remove rare categorical'][0][1] if input_dic['Remove rare categorical'] else 0
         results['R2'] = round(r2, 3)
         results['R2 Adj'] = round(r2_adj, 3)
         results['n'] = n
@@ -267,6 +270,7 @@ class MyLinearRegression:
             'R2 Adj': full_dic['R2 Adj'],
             'Diff mean + STD': full_dic['Diff mean'] + full_dic['Diff STD'],
             '% dropped': full_dic['Percent dropped'],
+            'Model cutoff': full_dic['Model cutoff'],
             'Diff mean': full_dic['Diff mean'],
             'Diff STD': full_dic['Diff STD'],
             'n': full_dic['n'],

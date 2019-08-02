@@ -89,7 +89,7 @@ def simple_initial(debug=True):
         print("Head:\n" + reg._head() + '\n')
         print("Describe:\n" + reg._describe() + '\n')
 
-    results_dic = reg._do_actual_regression_part({})
+    results_dic = reg._do_actual_regression_part({'Remove rare categorical': None})
 
     if debug:
         print("\n-------------------------------------------------------\nAFTER Adding regression:")
@@ -113,7 +113,7 @@ def regression_same_as_lecture():
     reg._drop_features(['Year'])
     reg._add_dummies()
 
-    return reg._do_actual_regression_part({})
+    return reg._do_actual_regression_part({'Remove rare categorical': None})
 
 
 def test_basics():
@@ -151,7 +151,8 @@ def test_regular_regression_func(debug=False):
                                      ('Mileage', 'low', 0),
                                      ('Year', 'high', 0),
                                      ('Year', 'low', 0.01)
-                                     ]
+                                     ],
+                 'Remove rare categorical': None
                  }
     results_dic = reg.do_linear_regression(input_dic)
 
