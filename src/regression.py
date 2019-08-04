@@ -142,7 +142,6 @@ class MyLinearRegression:
 
     def do_linear_regression(self, input_dic):
 
-        # TODO copy here different debug features from test functions
         output_dic = {}
 
         if self.debug:
@@ -183,7 +182,8 @@ class MyLinearRegression:
                 if remove_rare[0] not in input_dic['Features to drop']:
                     self._replace_categorical_fraction_from_max(remove_rare[0], remove_rare[1], "Other")
 
-        self._do_log_on_dependent()
+        if input_dic.get('Perform log on dependent') is None or input_dic.get('Perform log on dependent'):
+            self._do_log_on_dependent()
 
         self._add_dummies()
 
@@ -229,15 +229,25 @@ class MyLinearRegression:
         coef_summary['Weights'] = reg.coef_
 
         # Test
+        # Perform common preparations regardless if log function is done or not
         y_hat_test = reg.predict(x_test)
-        # TODO should leave this handling? Switch to something else? Enlarge the range?
-        with np.errstate(over='ignore'):
-            y_hat_test_exp = np.exp(y_hat_test)
-        df_pf = pd.DataFrame(y_hat_test_exp, columns=['Prediction'])
         y_test = y_test.reset_index(drop=True)
-        df_pf['Target'] = np.exp(y_test)
-        df_pf, inf_replaced, inf_replaced_with = self._fix_prediction_inf(df_pf, np.exp(y_train.max()))
-        df_pf, zero_replaced, zero_replaced_with = self._fix_prediction_zero(df_pf, np.exp(y_train.min()))
+        y_train_max = y_train.max()
+        y_train_min = y_train.min()
+        # TODO should leave this handling? Switch to something else? Enlarge the range?
+        if input_dic.get('Perform log on dependent') is None or input_dic.get('Perform log on dependent'):
+            with np.errstate(over='ignore'):
+                y_hat_test_exp = np.exp(y_hat_test)
+            df_pf = pd.DataFrame(y_hat_test_exp, columns=['Prediction'])
+            df_pf['Target'] = np.exp(y_test)
+            y_train_max = np.exp(y_train_max)
+            y_train_min = np.exp(y_train_min)
+        else:
+            df_pf = pd.DataFrame(y_hat_test, columns=['Prediction'])
+            df_pf['Target'] = y_test
+
+        df_pf, inf_replaced, inf_replaced_with = self._fix_prediction_inf(df_pf, y_train_max)
+        df_pf, zero_replaced, zero_replaced_with = self._fix_prediction_zero(df_pf, y_train_min)
 
         df_pf['Residual'] = df_pf['Target'] - df_pf['Prediction']
         df_pf['Difference%'] = np.absolute(df_pf['Residual'] / df_pf['Target'] * 100)
