@@ -230,6 +230,12 @@ class MyLinearRegression:
 
         # Test
         # Perform common preparations regardless if log function is done or not
+        n_test = x_test.shape[0]
+        p_test = x_test.shape[1]
+        r2_test = reg.score(x_test, y_test)
+        r2_adj_test = 1 - (1 - r2_test) * (n_test - 1) / (n_test - p_test - 1)
+        # print(f"n_test: {n_test}, p_test: {p_test}, r2_test: {r2_test}, r2_adj_test: {r2_adj_test}")
+
         y_hat_test = reg.predict(x_test)
         y_test = y_test.reset_index(drop=True)
         y_train_max = y_train.max()
@@ -259,6 +265,7 @@ class MyLinearRegression:
         results['Model cutoff'] = input_dic['Remove rare categorical'][0][1] if input_dic['Remove rare categorical'] else 0
         results['R2'] = round(r2, 3)
         results['R2 Adj'] = round(r2_adj, 3)
+        results['R2 Adj Test'] = round(r2_adj_test, 3)
         results['n'] = n
         results['p'] = p
         results['Diff mean'] = round(df_pf.describe()['Difference%']['mean'], 2)
@@ -278,6 +285,7 @@ class MyLinearRegression:
     def get_main_results(full_dic):
         return {
             'R2 Adj': full_dic['R2 Adj'],
+            'R2 Adj Test': full_dic['R2 Adj Test'],
             'Diff mean + STD': full_dic['Diff mean'] + full_dic['Diff STD'],
             '% dropped': full_dic['Percent dropped'],
             'Model cutoff': full_dic['Model cutoff'],

@@ -128,36 +128,41 @@ def optimize():
         cutoff = 0
         log_regression = False
 
+        def copy(self):
+            new_res = results_opt()
+            new_res.value = self.value
+            new_res.features = self.features
+            new_res.outliers = self.outliers
+            new_res.result = self.result
+            new_res.cutoff = self.cutoff
+            new_res.log_regression = self.log_regression
+            return new_res
+
     max_r2_results = results_opt()
     min_mean_plus_std_results = results_opt()
     min_mean_plus_std_results.value = float("inf")
     min_product_results = results_opt()
     min_product_results.value = float("inf")
+    max_product_adj_r2 = results_opt()
 
-    for (features_left, outliers, cutoff, log_regression) in regs_dic:
-        result = regs_dic[(features_left, outliers, cutoff, log_regression)]
-        if result['Diff mean'] + result['Diff STD'] < min_mean_plus_std_results.value:
-            min_mean_plus_std_results.value = result['Diff mean'] + result['Diff STD']
-            min_mean_plus_std_results.features = features_left
-            min_mean_plus_std_results.outliers = outliers
-            min_mean_plus_std_results.cutoff = cutoff
-            min_mean_plus_std_results.log_regression = log_regression
-            min_mean_plus_std_results.result = result
-        if result['R2 Adj'] > max_r2_results.value:
-            max_r2_results.value = result['R2 Adj']
-            max_r2_results.features = features_left
-            max_r2_results.outliers = outliers
-            max_r2_results.cutoff = cutoff
-            max_r2_results.log_regression = log_regression
-            max_r2_results.result = result
-        product = (1-result['R2 Adj']) * (result['Diff mean'] + result['Diff STD'])
+    results = results_opt()
+
+    for (results.features, results.outliers, results.cutoff, results.log_regression) in regs_dic:
+        results.result = regs_dic[(results.features, results.outliers, results.cutoff, results.log_regression)]
+        if results.result['Diff mean'] + results.result['Diff STD'] < min_mean_plus_std_results.value:
+            results.value = results.result['Diff mean'] + results.result['Diff STD']
+            min_mean_plus_std_results = results.copy()
+        if results.result['R2 Adj'] > max_r2_results.value:
+            results.value = results.result['R2 Adj']
+            max_r2_results = results.copy()
+        product = (1-results.result['R2 Adj']) * (results.result['Diff mean'] + results.result['Diff STD'])
         if product < min_product_results.value:
-            min_product_results.value = product
-            min_product_results.features = features_left
-            min_product_results.outliers = outliers
-            min_product_results.cutoff = cutoff
-            min_product_results.log_regression = log_regression
-            min_product_results.result = result
+            results.value = product
+            min_product_results = results.copy()
+        product_adj_r2 = results.result['R2 Adj'] * results.result['R2 Adj Test']
+        if product_adj_r2 > max_product_adj_r2.value:
+            results.value = product_adj_r2
+            max_product_adj_r2 = results.copy()
 
     print(f"\nmin_mean_plus_std: {round(min_mean_plus_std_results.value, 2)}, "
           f"cutoff: {min_mean_plus_std_results.cutoff}, "
@@ -167,14 +172,6 @@ def optimize():
     print(min_mean_plus_std_results.outliers)
     print(MyLinearRegression.get_main_results(min_mean_plus_std_results.result))
 
-    print(f"\nmax_R2_adjusted: {max_r2_results.value}, "
-          f"cutoff: {max_r2_results.cutoff}, "
-          f"log on Price: {max_r2_results.log_regression}, "
-          f"features: {max_r2_results.features}, "
-          f"outliers:")
-    print(max_r2_results.outliers)
-    print(MyLinearRegression.get_main_results(max_r2_results.result))
-
     print(f"\nmin_product: {round(min_product_results.value,2)}, "
           f"cutoff: {min_product_results.cutoff}, "
           f"log on Price: {min_product_results.log_regression}, "
@@ -182,3 +179,19 @@ def optimize():
           f"outliers:")
     print(min_product_results.outliers)
     print(MyLinearRegression.get_main_results(min_product_results.result))
+
+    print(f"\nmax_product_adj_r2: {round(max_product_adj_r2.value,2)}, "
+          f"cutoff: {max_product_adj_r2.cutoff}, "
+          f"log on Price: {max_product_adj_r2.log_regression}, "
+          f"features: {max_product_adj_r2.features}, "
+          f"outliers:")
+    print(max_product_adj_r2.outliers)
+    print(MyLinearRegression.get_main_results(max_product_adj_r2.result))
+
+    print(f"\nmax_R2_adjusted: {max_r2_results.value}, "
+          f"cutoff: {max_r2_results.cutoff}, "
+          f"log on Price: {max_r2_results.log_regression}, "
+          f"features: {max_r2_results.features}, "
+          f"outliers:")
+    print(max_r2_results.outliers)
+    print(MyLinearRegression.get_main_results(max_r2_results.result))
