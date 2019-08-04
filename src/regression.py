@@ -64,6 +64,7 @@ class MyLinearRegression:
         vif["features"] = variables.columns
         return vif.to_string()
 
+
     """ Methods that affect the data """
 
     def _replace_categorical_fraction_from_max(self, feature_name, frac_from_max, name_to_replace):
@@ -218,6 +219,9 @@ class MyLinearRegression:
 
         # Split training and test
         x_train, x_test, y_train, y_test = train_test_split(inputs_scaled, targets, test_size=0.2, random_state=365)
+
+        # Removed, way way too slow, leaving in case every needed in the future
+        # max_vif = max([variance_inflation_factor(x_train, i) for i in range(x_train.shape[1])])
 
         # Perform regression
         reg = LinearRegression()

@@ -1,12 +1,19 @@
 """
 TODOS by Priority:
-* Make sure that VIF is not too high for the choice
+* Check if being without Year can do (can't have Mileage and Year because of high correlation,
+    and Year is worse since it has also bigger corellation to Model
 * Make sure reference group is not too small
-* Remove one of Year / Mileage or at least see what influence it has
+* Check best answers don't have very low coefficients
 * Check conclusions on numerous train/test
 
 Ask questions:
-* Is this a good way to check how good the model is: min (1-R2)*(diff.mean + diff.std)?
+* Is this a good way to check how good the model is: min (1-R2)*(diff.mean + diff.std) or perhaps (1-R2 train)*(1-R2 test)
+* There are many different correlations between different variables.
+    - How do we check correlation for categorical variables?
+    - My intuition / playing with the data:
+        - Brand and Model has extremely high correlation.  Can't leave together, perhaps combine
+        - Year has high correlation to: Mileage, but also to Model
+        - Mileage has high correction to Model also probably
 """
 
 import itertools
@@ -16,7 +23,10 @@ from src.regression import MyLinearRegression
 
 
 def optimize():
-    features = ['Brand', 'Body', 'Mileage', 'EngineV', 'Engine Type', 'Registration', 'Year', 'Model']
+    # TODO - return removing year always? Year probably in addition to high correlation to Mileage, has
+    #  also high correlation to Model
+    # features = ['Brand', 'Body', 'Mileage', 'EngineV', 'Engine Type', 'Registration', 'Year', 'Model']
+    features = ['Brand', 'Body', 'Mileage', 'EngineV', 'Engine Type', 'Registration', 'Model']
     print("All features: " + str(features))
 
     short_run = False
@@ -34,7 +44,7 @@ def optimize():
         }
 
         fractions_price = [0]
-        do_log_on_regression = {False}
+        do_log_on_regression = {True}
         combine_brand_model = {True}
     elif short_run:
         outliers_dic = {
@@ -49,7 +59,7 @@ def optimize():
 
         fractions_price = [0]
         do_log_on_regression = {True}
-        combine_brand_model = {False}
+        combine_brand_model = {True}
     else:
         outliers_dic = {
             'Price high': [.005, .01, .02],
@@ -62,7 +72,10 @@ def optimize():
 
         fractions_price = [0, 0.05, 0.10, 0.15]
         do_log_on_regression = {True, False}
-        combine_brand_model = {True, False}
+        # TODO - because of high correlation, and the fact that it doesn't hurt predictions too much,
+        #  removed ability to have both at the same time not combined
+        #  combine_brand_model = {True, False}
+        combine_brand_model = {True}
 
     regs_dic = {}
     input_dic = {}
@@ -71,6 +84,8 @@ def optimize():
         input_dic['Perform log on dependent'] = log_regression
         for num_features_to_remove in range(len(features)-1):
             for features_to_remove in list(itertools.combinations(features, num_features_to_remove)):
+                if ('Year' not in features_to_remove) and ('Mileage' not in features_to_remove):
+                    continue  # do not allow together due to high correlation
                 for combine_models in combine_brand_model:
                     if combine_models and (('Brand' in features_to_remove) or ('Model' in features_to_remove)):
                         continue
