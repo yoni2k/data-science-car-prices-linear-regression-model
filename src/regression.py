@@ -194,6 +194,8 @@ class MyLinearRegression:
         if input_dic.get('Perform log on dependent') is None or input_dic.get('Perform log on dependent'):
             self._do_log_on_dependent()
 
+        output_dic['First row'] = self.current_data.iloc[0]
+
         self._add_dummies()
 
         results_dic = self._do_actual_regression_part(input_dic)

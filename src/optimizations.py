@@ -1,8 +1,9 @@
 """
 TODOS by Priority:
-* Check best answers don't have very low coefficients
-* Make sure reference group is not too small
 * Check conclusions on numerous train/test
+* TODOs in code, splitting into functions, adding comments etc.
+* Possibly if making more changes - currently not needed: Make sure reference group is not too small
+* Possibly if making more changes - was checked for best answer: Check best answers don't have very low coefficients
 
 
 Ask questions:
@@ -210,6 +211,16 @@ def optimize():
     print(min_mean_plus_std_results.outliers)
     print(MyLinearRegression.get_main_results(min_mean_plus_std_results.result))
 
+    print(f"\nmax_R2_adjusted: {max_r2_results.value}, "
+          f"cutoff: {max_r2_results.cutoff}, "
+          f"log on Price: {max_r2_results.log_regression}, "
+          f"combine_models: {max_r2_results.combine_models}, "
+          f"features: {max_r2_results.features}, "
+          f"outliers:")
+    print(max_r2_results.outliers)
+    print(MyLinearRegression.get_main_results(max_r2_results.result))
+    # print(max_r2_results.result['Coef summary'].to_string(max_rows=1500))
+
     print(f"\nmin_product: {round(min_product_results.value,2)}, "
           f"cutoff: {min_product_results.cutoff}, "
           f"log on Price: {min_product_results.log_regression}, "
@@ -227,15 +238,6 @@ def optimize():
           f"features: {max_product_adj_r2.features}, "
           f"outliers:")
     print(max_product_adj_r2.outliers)
+    print(f"First row: {max_product_adj_r2.result['First row']}")
     print(MyLinearRegression.get_main_results(max_product_adj_r2.result))
     #print(max_product_adj_r2.result['Coef summary'].to_string(max_rows=1500))
-
-    print(f"\nmax_R2_adjusted: {max_r2_results.value}, "
-          f"cutoff: {max_r2_results.cutoff}, "
-          f"log on Price: {max_r2_results.log_regression}, "
-          f"combine_models: {max_r2_results.combine_models}, "
-          f"features: {max_r2_results.features}, "
-          f"outliers:")
-    print(max_r2_results.outliers)
-    print(MyLinearRegression.get_main_results(max_r2_results.result))
-    #print(max_r2_results.result['Coef summary'].to_string(max_rows=1500))
