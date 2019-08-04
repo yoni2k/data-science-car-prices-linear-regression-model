@@ -1,10 +1,11 @@
 """
 TODOS by Priority:
+* Check best answers don't have very low coefficients
+* Make sure reference group is not too small
+* Check conclusions on numerous train/test
 * Check if being without Year can do (can't have Mileage and Year because of high correlation,
     and Year is worse since it has also bigger corellation to Model
-* Make sure reference group is not too small
-* Check best answers don't have very low coefficients
-* Check conclusions on numerous train/test
+
 
 Ask questions:
 * Is this a good way to check how good the model is: min (1-R2)*(diff.mean + diff.std) or perhaps (1-R2 train)*(1-R2 test)
@@ -23,14 +24,15 @@ from src.regression import MyLinearRegression
 
 
 def optimize():
-    # TODO - return removing year always? Year probably in addition to high correlation to Mileage, has
-    #  also high correlation to Model
-    # features = ['Brand', 'Body', 'Mileage', 'EngineV', 'Engine Type', 'Registration', 'Year', 'Model']
-    features = ['Brand', 'Body', 'Mileage', 'EngineV', 'Engine Type', 'Registration', 'Model']
+    features = ['Brand', 'Body', 'Mileage', 'EngineV', 'Engine Type', 'Registration', 'Year', 'Model']
     print("All features: " + str(features))
 
     short_run = False
     special_run = False
+
+    # TODO - return removing year always? Year probably in addition to high correlation to Mileage, has
+    #  also high correlation to Model
+    features_to_always_remove = ['Year']
 
     if special_run:
         outliers_dic = {
@@ -84,6 +86,13 @@ def optimize():
         input_dic['Perform log on dependent'] = log_regression
         for num_features_to_remove in range(len(features)-1):
             for features_to_remove in list(itertools.combinations(features, num_features_to_remove)):
+                contains_features_must_remove = False
+                for to_remove in features_to_always_remove:
+                    if to_remove not in features_to_remove:
+                        contains_features_must_remove = True
+                        break
+                if contains_features_must_remove:
+                    continue
                 if ('Year' not in features_to_remove) and ('Mileage' not in features_to_remove):
                     continue  # do not allow together due to high correlation
                 for combine_models in combine_brand_model:
@@ -210,6 +219,7 @@ def optimize():
           f"outliers:")
     print(min_product_results.outliers)
     print(MyLinearRegression.get_main_results(min_product_results.result))
+    #print(min_product_results.result['Coef summary'].to_string(max_rows=1500))
 
     print(f"\nmax_product_adj_r2: {round(max_product_adj_r2.value,2)}, "
           f"cutoff: {max_product_adj_r2.cutoff}, "
@@ -219,6 +229,7 @@ def optimize():
           f"outliers:")
     print(max_product_adj_r2.outliers)
     print(MyLinearRegression.get_main_results(max_product_adj_r2.result))
+    #print(max_product_adj_r2.result['Coef summary'].to_string(max_rows=1500))
 
     print(f"\nmax_R2_adjusted: {max_r2_results.value}, "
           f"cutoff: {max_r2_results.cutoff}, "
@@ -228,3 +239,4 @@ def optimize():
           f"outliers:")
     print(max_r2_results.outliers)
     print(MyLinearRegression.get_main_results(max_r2_results.result))
+    #print(max_r2_results.result['Coef summary'].to_string(max_rows=1500))
