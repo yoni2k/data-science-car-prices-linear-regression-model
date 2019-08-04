@@ -64,16 +64,16 @@ def optimize():
         combine_brand_model = {True}
     else:
         outliers_dic = {
-            'Price high': [.005, .01, .02],
-            'Price low': [0, 0.005],
-            'Mileage high': [0.005, .01, .02],
+            'Price high': [.005, .01, .02], # Usually chooses .01
+            'Price low': [0, 0.005], # Usually chooses 0
+            'Mileage high': [0.005, .01, .02],  # Mileage is usually not chosen at all (because Year is better, and there is a limitation of having both together)
             'Mileage low': [],  # was tried and didn't help
             'Year high': [],  # decided not to try, need to give prices for newest cars, on the graph there are a lot of samples for 2015
-            'Year low': [0.005, 0.01, 0.02]
+            'Year low': [0.005, 0.01, 0.02] # Usually chooses .01
         }
 
-        fractions_price = [0, 0.05, 0.10, 0.15]
-        do_log_on_regression = {True, False}
+        fractions_price = [0, 0.03, 0.04, 0.05, 0.06] # Best answer has 0.04-0.05, and some have 0
+        do_log_on_regression = {True}  # Haven't seen that False was chosen, setting always to True for now
         # TODO - because of high correlation, and the fact that it doesn't hurt predictions too much,
         #  removed ability to have both at the same time not combined
         #  combine_brand_model = {True, False}
@@ -231,7 +231,7 @@ def optimize():
     print(MyLinearRegression.get_main_results(min_product_results.result))
     #print(min_product_results.result['Coef summary'].to_string(max_rows=1500))
 
-    print(f"\nmax_product_adj_r2: {round(max_product_adj_r2.value,2)}, "
+    print(f"\nmax_product_adj_r2: {round(max_product_adj_r2.value,3)}, "
           f"cutoff: {max_product_adj_r2.cutoff}, "
           f"log on Price: {max_product_adj_r2.log_regression}, "
           f"combine_models: {max_product_adj_r2.combine_models}, "
