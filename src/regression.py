@@ -105,6 +105,10 @@ class MyLinearRegression:
         self.current_data = self.current_data[self.current_data[feature_name] < num_to_remove_from]
         self.current_data.reset_index(drop=True, inplace=True)
 
+    def _combine_features(self, feature1, feature2):
+        self.current_data[feature1 + '_' + feature2] = self.current_data[feature1] + '_' + self.current_data[feature2]
+        self.current_data.drop([feature1, feature2], axis=1, inplace=True)
+
     def _do_log_on_dependent(self):
         self.current_data[self.name_dependent] = np.log(self.current_data[self.name_dependent])
 
@@ -181,6 +185,10 @@ class MyLinearRegression:
             for remove_rare in input_dic['Remove rare categorical']:
                 if remove_rare[0] not in input_dic['Features to drop']:
                     self._replace_categorical_fraction_from_max(remove_rare[0], remove_rare[1], "Other")
+
+        if input_dic.get('Combine features'):
+            for combine_features in input_dic.get('Combine features'):
+                self._combine_features(combine_features[0], combine_features[1])
 
         if input_dic.get('Perform log on dependent') is None or input_dic.get('Perform log on dependent'):
             self._do_log_on_dependent()
