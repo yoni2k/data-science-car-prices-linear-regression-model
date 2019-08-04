@@ -3,8 +3,6 @@ TODOS by Priority:
 * Check best answers don't have very low coefficients
 * Make sure reference group is not too small
 * Check conclusions on numerous train/test
-* Check if being without Year can do (can't have Mileage and Year because of high correlation,
-    and Year is worse since it has also bigger corellation to Model
 
 
 Ask questions:
@@ -32,7 +30,8 @@ def optimize():
 
     # TODO - return removing year always? Year probably in addition to high correlation to Mileage, has
     #  also high correlation to Model
-    features_to_always_remove = ['Year']
+    # features_to_always_remove = ['Year']
+    features_to_always_remove = []
 
     if special_run:
         outliers_dic = {
