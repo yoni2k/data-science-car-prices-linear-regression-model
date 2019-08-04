@@ -1,7 +1,5 @@
 """
 TODOS by Priority:
-* Do comparison of test sample also by R2
-* Check what other things can be tweaked / not done
 * Make sure that VIF is not too high for the choice
 * Make sure reference group is not too small
 * Combine Brand and Model

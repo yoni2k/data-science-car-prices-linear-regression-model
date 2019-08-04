@@ -240,7 +240,6 @@ class MyLinearRegression:
         y_test = y_test.reset_index(drop=True)
         y_train_max = y_train.max()
         y_train_min = y_train.min()
-        # TODO should leave this handling? Switch to something else? Enlarge the range?
         if input_dic.get('Perform log on dependent') is None or input_dic.get('Perform log on dependent'):
             with np.errstate(over='ignore'):
                 y_hat_test_exp = np.exp(y_hat_test)
@@ -252,6 +251,7 @@ class MyLinearRegression:
             df_pf = pd.DataFrame(y_hat_test, columns=['Prediction'])
             df_pf['Target'] = y_test
 
+        # TODO should leave this handling? Switch to something else? Enlarge the range?
         df_pf, inf_replaced, inf_replaced_with = self._fix_prediction_inf(df_pf, y_train_max)
         df_pf, zero_replaced, zero_replaced_with = self._fix_prediction_zero(df_pf, y_train_min)
 
