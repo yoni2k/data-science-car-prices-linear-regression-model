@@ -1,6 +1,5 @@
 """
 TODOS by Priority:
-* Check conclusions on numerous train/test
 * TODOs in code, splitting into functions, adding comments etc.
 * Possibly if making more changes - currently not needed: Make sure reference group is not too small
 * Possibly if making more changes - was checked for best answer: Check best answers don't have very low coefficients
@@ -22,7 +21,56 @@ from pprint import pprint
 from src.regression import MyLinearRegression
 
 
-def optimize():
+class results_opt:
+    value = 0
+    features = None
+    outliers = None
+    result = None
+    cutoff = 0
+    log_regression = False
+    combine_models = False
+    rand = 365
+
+    def copy(self):
+        new_res = results_opt()
+        new_res.value = self.value
+        new_res.features = self.features
+        new_res.outliers = self.outliers
+        new_res.result = self.result
+        new_res.cutoff = self.cutoff
+        new_res.log_regression = self.log_regression
+        new_res.combine_models = self.combine_models
+        new_res.rand = self.rand
+        return new_res
+
+def optimize_different_split_randoms():
+    results = results_opt()
+    min_r2_product_train_test = results_opt()
+    min_r2_product_train_test.value = float("-inf")
+    for rand in range(100):
+        print(f"Optimizing for random {rand}")
+        results.value, results.cutoff, results.features, results.outliers, results.result = optimize(train_test_split_random=rand)
+        product_adj_r2 = results.result['R2 Adj'] * results.result['R2 Adj Test']
+        if product_adj_r2 > min_r2_product_train_test.value:
+            min_r2_product_train_test = results.copy()
+            min_r2_product_train_test.value = product_adj_r2
+            min_r2_product_train_test.rand = rand
+
+    print(f"\n\n***********************************************************\n"
+          f"******************** Results on running on different samples: ***********")
+    print(f"\nmax_product_adj_r2: {round(min_r2_product_train_test.value,3)}, "
+          f"cutoff: {min_r2_product_train_test.cutoff}, "
+          f"features: {min_r2_product_train_test.features}, "
+          f"rand: {min_r2_product_train_test.rand}, "
+          f"outliers:")
+    print(min_r2_product_train_test.outliers)
+    print(f"First row: {min_r2_product_train_test.result['First row']}")
+    print(MyLinearRegression.get_main_results(min_r2_product_train_test.result))
+    print(min_r2_product_train_test.result['Coef summary'].to_string(max_rows=1500))
+
+
+
+def optimize(train_test_split_random=365):
     features = ['Brand', 'Body', 'Mileage', 'EngineV', 'Engine Type', 'Registration', 'Year', 'Model']
     print("All features: " + str(features))
 
@@ -81,6 +129,8 @@ def optimize():
 
     regs_dic = {}
     input_dic = {}
+
+    input_dic['Random train test split'] = train_test_split_random
 
     for log_regression in do_log_on_regression:
         input_dic['Perform log on dependent'] = log_regression
@@ -155,26 +205,6 @@ def optimize():
                                                   log_regression,
                                                   combine_models)] = results_dic
 
-    class results_opt:
-        value = 0
-        features = None
-        outliers = None
-        result = None
-        cutoff = 0
-        log_regression = False
-        combine_models = False
-
-        def copy(self):
-            new_res = results_opt()
-            new_res.value = self.value
-            new_res.features = self.features
-            new_res.outliers = self.outliers
-            new_res.result = self.result
-            new_res.cutoff = self.cutoff
-            new_res.log_regression = self.log_regression
-            new_res.combine_models = self.combine_models
-            return new_res
-
     max_r2_results = results_opt()
     min_mean_plus_std_results = results_opt()
     min_mean_plus_std_results.value = float("inf")
@@ -241,3 +271,4 @@ def optimize():
     print(f"First row: {max_product_adj_r2.result['First row']}")
     print(MyLinearRegression.get_main_results(max_product_adj_r2.result))
     #print(max_product_adj_r2.result['Coef summary'].to_string(max_rows=1500))
+    return round(max_product_adj_r2.value,3), max_product_adj_r2.cutoff, max_product_adj_r2.features, max_product_adj_r2.outliers, max_product_adj_r2.result

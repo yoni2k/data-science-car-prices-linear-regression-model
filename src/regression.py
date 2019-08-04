@@ -220,7 +220,10 @@ class MyLinearRegression:
         inputs_scaled = scaler.transform(inputs)
 
         # Split training and test
-        x_train, x_test, y_train, y_test = train_test_split(inputs_scaled, targets, test_size=0.2, random_state=365)
+        random_state = 365
+        if input_dic.get('Random train test split'):
+            random_state = input_dic['Random train test split']
+        x_train, x_test, y_train, y_test = train_test_split(inputs_scaled, targets, test_size=0.2, random_state=random_state)
 
         # Removed, way way too slow, leaving in case every needed in the future
         # max_vif = max([variance_inflation_factor(x_train, i) for i in range(x_train.shape[1])])
