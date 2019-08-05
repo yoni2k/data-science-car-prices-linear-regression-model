@@ -16,6 +16,7 @@ Ask questions:
 """
 
 import itertools
+import numpy as np
 from pprint import pprint
 
 from src.regression import MyLinearRegression
@@ -47,10 +48,12 @@ def optimize_different_split_randoms():
     results = results_opt()
     min_r2_product_train_test = results_opt()
     min_r2_product_train_test.value = float("-inf")
-    for rand in range(100):
+    for rand in range(5):
         print(f"Optimizing for random {rand}")
         results.value, results.cutoff, results.features, results.outliers, results.result = optimize(train_test_split_random=rand)
         product_adj_r2 = results.result['R2 Adj'] * results.result['R2 Adj Test']
+        if results.result['R2 Adj'] < 0 and results.result['R2 Adj Test'] < 0:
+            product_adj_r2 = 0
         if product_adj_r2 > min_r2_product_train_test.value:
             min_r2_product_train_test = results.copy()
             min_r2_product_train_test.value = product_adj_r2
@@ -165,7 +168,12 @@ def optimize(train_test_split_random=365):
                                                         ('Year', 'low', 0.01)
                                                         ]
                         reg = MyLinearRegression('../resources/1.04. Real-life example.csv', 'Price')
-                        results_dic = reg.do_linear_regression(input_dic)
+                        try:
+                            results_dic = reg.do_linear_regression(input_dic)
+                        except np.linalg.LinAlgError:
+                            print("LinAlgError happened, continuing")
+                            continue
+
 
                         if (not regs_dic.get((tuple(set(features) - set(features_to_remove)),
                                               tuple(input_dic['Remove outliers']),
@@ -196,6 +204,11 @@ def optimize(train_test_split_random=365):
                                                                         ('Price', 'low', price_low_outlier),
                                                                         ('Mileage', 'high', mileage_high_outlier),
                                                                         ('Year', 'low', year_low_outlier)]
+                                        try:
+                                            results_dic = reg.do_linear_regression(input_dic)
+                                        except np.linalg.LinAlgError:
+                                            print("LinAlgError happened, continuing")
+                                            continue
                                         results_dic = reg.do_linear_regression(input_dic)
                                         if results_dic['R2'] < 0.8 or (results_dic['Diff mean'] + results_dic['Diff STD']) > 100:
                                             continue
@@ -228,6 +241,8 @@ def optimize(train_test_split_random=365):
             results.value = product
             min_product_results = results.copy()
         product_adj_r2 = results.result['R2 Adj'] * results.result['R2 Adj Test']
+        if results.result['R2 Adj'] < 0 or results.result['R2 Adj Test'] < 0:
+            product_adj_r2 = 0
         if product_adj_r2 > max_product_adj_r2.value:
             results.value = product_adj_r2
             max_product_adj_r2 = results.copy()
